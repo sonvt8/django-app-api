@@ -1,8 +1,8 @@
 ---
 
-# Django App API
+# Django Recipe App API
 
-This project is a Django-based web application, which can be deployed locally using Docker. Follow the steps below to get the project up and running.
+This project is a Django-based web application that can be deployed locally using Docker or on an AWS EC2 instance. Follow the steps below to get the project up and running.
 
 ## Prerequisites
 
@@ -98,5 +98,115 @@ This will stop and remove the running containers.
 - The `docker-compose.yml` file defines all the necessary services to run the project, including the web application and any databases or caching services.
 
 Now you should have everything you need to deploy and run the project locally on your machine.
+
+---
+
+
+## AWS EC2 Deployment
+
+### 1. Launch an EC2 Instance
+
+1. Sign in to your AWS Management Console.
+2. Navigate to **EC2** and click on **Launch Instance**.
+3. Choose the **Amazon Linux 2** AMI or your preferred Linux distribution.
+4. Select an instance type (e.g., `t2.micro` for free tier).
+5. Ensure the instance has security groups allowing **SSH (port 22)** and **HTTP (port 80)** access.
+6. Launch the instance and download the `.pem key` for SSH access.
+
+### 2. SSH into Your EC2 Instance
+
+Once your EC2 instance is running, SSH into it from your local machine:
+
+```bash
+ssh -i "path_to_your_key.pem" ec2-user@your_instance_public_ip
+```
+
+### 3. Update and Install Required Packages
+
+Once connected, update the system and install Docker:
+
+```bash
+sudo yum update -y
+sudo yum install docker -y
+```
+
+Start Docker and add the user to the Docker group:
+
+```bash
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+```
+
+### 4. Install Docker Compose
+
+Install Docker Compose by downloading the binary:
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+Check if Docker Compose is installed:
+
+```bash
+docker-compose --version
+```
+
+### 5. Clone the Project to EC2
+
+Clone the project to your EC2 instance:
+
+```bash
+git clone https://github.com/sonvt8/django-app-api.git
+cd django-app-api
+```
+
+### 6. Set Up Environment Variables
+
+Create a `.env` file in the project root directory:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your production environment settings like database credentials and secret keys.
+
+### 7. Build and Run the Docker Containers
+
+Build the Docker containers:
+
+```bash
+docker-compose -f docker-compose-deploy.yml build
+```
+
+Run the application:
+
+```bash
+docker-compose -f docker-compose-deploy.yml up -d
+```
+
+### 8. Create a Superuser
+
+Create a superuser for accessing the admin interface:
+
+```bash
+docker-compose -f docker-compose-deploy.yml run --rm app sh -c "python manage.py createsuperuser"
+```
+
+### 9. Access the Application
+
+Once the containers are running, you can access your app via:
+
+- **Django Admin**: `http://<your-ec2-instance-public-ip>/admin`
+  - Use the superuser credentials you created earlier.
+  
+- **API Documentation**: `http://<your-ec2-instance-public-ip>/api/doc`
+
+---
+
+## Additional Notes
+
+- Make sure your EC2 security group allows access to necessary ports, such as 8000 and 80 for HTTP.
+- Keep your `.env` file updated with production-level settings when deploying to production environments.
 
 ---
