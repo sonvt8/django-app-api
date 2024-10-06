@@ -210,3 +210,37 @@ Once the containers are running, you can access your app via:
 - Keep your `.env` file updated with production-level settings when deploying to production environments.
 
 ---
+
+## Updating the Application
+
+When you push new versions of your code and want to update the service on your server, follow these steps:
+
+#### Step 1: Pull the Latest Changes
+
+First, pull the latest changes from the Git repository to your server:
+
+```bash
+git pull origin
+```
+
+#### Step 2: Rebuild the Application Image
+
+Rebuild the Docker image so it includes the latest code changes:
+
+```bash
+docker-compose -f docker-compose-deploy.yml build app
+```
+
+#### Step 3: Restart the Application
+
+Apply the update by restarting the app container. Use the following command to restart only the `app` service without affecting its dependencies (like the database or proxy):
+
+```bash
+docker-compose -f docker-compose-deploy.yml up --no-deps -d app
+```
+
+The `--no-deps` flag ensures that dependent services (such as a database or proxy) will not restart, and only the `app` container will be updated and restarted.
+
+---
+
+With this updated guide, the application can be deployed, maintained, and updated on an online host with Docker Compose.
